@@ -1,39 +1,77 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Auto Folder Tracker — Github</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+body{background:#111;color:#0f0;padding:20px;min-height:100vh}
+h1{text-align:center;margin:20px 0}
+.status{background:#222;padding:15px;text-align:center;border-radius:8px;margin-bottom:20px}
+.folder-list{display:flex;flex-direction:column;gap:8px;max-width:900px;margin:0 auto}
+.card{background:#222;padding:12px;border-left:3px solid #0f0;border-radius:4px;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.fname{font-weight:bold;margin-bottom:4px}
+.txt{color:#9f9;padding-left:10px}
+.empty{text-align:center;color:#555;padding:50px}
+</style>
+</head>
+<body>
 
-    <title>Game Store</title>
+<h1>📂 AUTO Folder Tracker</h1>
+<div class="status" id="status">✅ LOADED — AUTO REFRESH EVERY 3 SECONDS</div>
+<div class="folder-list" id="list"><div class="empty">Scanning folders...</div></div>
 
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<script>
+const list=document.getElementById('list');
+const status=document.getElementById('status');
+let known=new Set();
 
-        html {
-            width: 100%;
-            min-height: 100%;
-            background: #0b0b0b;
-        }
+// AGAD SCAN PAG BUKAS
+window.onload=()=>{scan();setInterval(scan,3000);};
 
-        body {
-            width: 100%;
-            min-height: 100vh;
-            background: #0b0b0b;
-            color: white;
-            font-family: Arial, Helvetica, sans-serif;
-            overflow-x: hidden;
-        }
+async function scan(){
+try{
+// BASAHIN ANG list.json — ITO ANG GAGAWAN MO NG SCRIPT NA GENERATE
+const res=await fetch('list.json?t='+Date.now());
+if(!res.ok)throw new Error('list.json not found');
+const folders=await res.json();
 
-        .header {
-            width: 100%;
-            padding: 18px 24px;
-            background: #151515;
-            border-bottom: 1px solid #292929;
-        }
+// CLEAR KUNG WALANG DATA
+if(folders.length===0){
+list.innerHTML='<div class="empty">No folders with Name.txt yet</div>';
+known.clear();
+return;
+}
+
+// TRACK REMOVE OLD
+const currentPaths=new Set(folders.map(f=>f.path));
+for(const p of known){
+if(!currentPaths.has(p)){const el=document.querySelector(`[data-p="${CSS.escape(p)}"]`);if(el)el.remove();}
+}
+known=currentPaths;
+
+// ADD NEW
+for(const item of folders){
+if(!document.querySelector(`[data-p="${CSS.escape(item.path)}"]`)){
+const el=document.createElement('div');
+el.className='card';
+el.dataset.p=item.path;
+el.innerHTML=`<div class="fname">📁 ${item.name}</div><div class="txt">📄 ${item.content}</div>`;
+list.appendChild(el);
+}}
+
+status.innerHTML=`✅ Last updated: ${new Date().toLocaleTimeString()} — ${folders.length} folder(s) found`;
+
+}catch(e){
+status.innerHTML='❌ Error: '+e.message+' — Make sure list.json exists in repo';
+list.innerHTML='<div class="empty">Waiting for list.json...</div>';
+}
+}
+</script>
+</body>
+</html>
 
         .store-name {
             font-size: 24px;
