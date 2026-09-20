@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Ameer Game Store</title>
+    <title>Game Store</title>
 
     <style>
         * {
@@ -14,16 +14,16 @@
         }
 
         html {
-            background: #0b0b0b !important;
+            width: 100%;
             min-height: 100%;
+            background: #0b0b0b;
         }
 
         body {
             width: 100%;
             min-height: 100vh;
-            margin: 0;
-            background: #0b0b0b !important;
-            color: #ffffff;
+            background: #0b0b0b;
+            color: white;
             font-family: Arial, Helvetica, sans-serif;
             overflow-x: hidden;
         }
@@ -35,6 +35,98 @@
             border-bottom: 1px solid #292929;
         }
 
+        .store-name {
+            font-size: 24px;
+            font-weight: 800;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 24px 60px;
+        }
+
+        .games {
+            width: 100%;
+            display: grid;
+            grid-template-columns:
+                repeat(auto-fit, minmax(230px, 1fr));
+            gap: 20px;
+        }
+
+        .game-card {
+            overflow: hidden;
+            background: #171717;
+            border: 1px solid #292929;
+            border-radius: 14px;
+        }
+
+        .game-icon {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            display: block;
+            object-fit: cover;
+            background: #222222;
+        }
+
+        .game-info {
+            padding: 15px;
+        }
+
+        .game-name {
+            font-size: 19px;
+            font-weight: bold;
+            margin-bottom: 7px;
+        }
+
+        .game-description {
+            color: #999999;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 500px) {
+            .header {
+                padding: 15px 16px;
+            }
+
+            .container {
+                padding: 24px 16px 50px;
+            }
+
+            .games {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (min-width: 501px) and (max-width: 800px) {
+            .games {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="header">
+        <div class="store-name">
+            Game Store
+        </div>
+    </header>
+
+    <main class="container">
+
+        <section
+            class="games"
+            id="games">
+        </section>
+
+    </main>
+
+</body>
+</html>
         .store-name {
             font-size: 24px;
             font-weight: 800;
