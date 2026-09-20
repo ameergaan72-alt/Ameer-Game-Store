@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AUTO Folder Tracker — NO CLICK NEEDED</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+body{background:#111;color:#0f0;padding:20px;min-height:100vh}
+h1{text-align:center;margin:20px 0}
+.status{background:#222;padding:15px;text-align:center;border-radius:8px;margin-bottom:20px}
+.folder-list{display:flex;flex-direction:column;gap:8px}
+.card{background:#222;padding:12px;border-left:3px solid #0f0;border-radius:4px}
+.fname{font-weight:bold;margin-bottom:4px}
+.txt{color:#9f9;padding-left:10px}
+.empty{text-align:center;color:#555;padding:50px}
+</style>
+</head>
+<body>
+
+<h1>📂 AUTO DETECT — NO CLICK AFTER FIRST TIME</h1>
+<div class="status" id="status">⚠️ PUMILI NG FOLDER ISANG BESES LANG — TAPOS WALA NA KANG GAGAWIN</div>
+<div class="folder-list" id="list"><div class="empty">NAGHIHINTAY... MAG LAGAY NG FOLDERS MAY Name.txt SA LOOB</div></div>
+
+<script>
+const list=document.getElementById('list');
+const status=document.getElementById('status');
+let known=new Set(),root=null;
+
+// BUBUKAS MO AGAD — AYUN, MAGPAPILI NG FOLDER ISANG BESES LANG
+window.onload=async()=>{
+try{
+// @ts-ignore
+root=await window.showDirectoryPicker();
+status.innerHTML='✅ NAKA MONITOR NA — WALA KANG GAGAWIN! MAG CREATE/LAGAY KA LANG NG FOLDER SA LOOB NG: <strong>'+root.name+'</strong>';
+list.innerHTML='';
+setInterval(check,2000); // TUWING 2 SEGUNDO — AWAUTO CHECK
+}catch(e){
+status.innerHTML='❌ PINILI MO WALA — REFRESH PAGE LANG PARA SUBOK ULIT'
+}}
+
+async function check(){
+if(!root)return;
+const now=new Set(),found=[];
+
+async function scan(dir,path=''){
+for await(const entry of dir.values()){
+const full=path+entry.name;
+if(entry.kind==='directory'){
+now.add(full);
+const txt=await findTxt(entry);
+found.push({name:entry.name,path:full,content:txt});
+await scan(entry,full+'/');
+}}}
+await scan(root);
+
+// BURA YUNG NAWALA
+for(const p of known){
+if(!now.has(p)){const el=document.querySelector(`[data-p="${CSS.escape(p)}"]`);if(el)el.remove()}
+}
+known=now;
+
+// LAGAY YUNG BAGO
+for(const item of found){
+if(!document.querySelector(`[data-p="${CSS.escape(item.path)}"]`)){
+const el=document.createElement('div');
+el.className='card';
+el.dataset.p=item.path;
+el.innerHTML=`<div class="fname">📁 ${item.name}</div><div class="txt">📄 ${item.content}</div>`;
+list.appendChild(el);
+}}
+
+if(found.length===0)list.innerHTML='<div class="empty">WALA PANG FOLDER — MAG CREATE KA NG FOLDER MAY Name.txt SA LOOB</div>';
+}
+
+async function findTxt(folder){
+try{
+for await(const f of folder.values()){
+if(f.kind==='file'&&f.name.toLowerCase()==='name.txt'){
+const file=await f.getFile();
+return await file.text().trim()||'(walang laman)';
+}}}catch(e){return '⚠️ di mabasa'}
+return '❌ walang Name.txt';
+}
+</script>
+</body>
+</html>
