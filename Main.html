@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Ameer Game Store</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            width: 100%;
+            min-height: 100%;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #0b0b0b;
+            color: white;
+        }
+
+        .header {
+            width: 100%;
+            padding: 18px 24px;
+            background: #151515;
+            border-bottom: 1px solid #292929;
+        }
+
+        .store-name {
+            font-size: 24px;
+            font-weight: 800;
+        }
+
+        .copyright {
+            margin-top: 4px;
+            font-size: 11px;
+            color: #777;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1400px;
+            margin: auto;
+            padding: 30px 24px 60px;
+        }
+
+        .games {
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(
+                auto-fit,
+                minmax(230px, 1fr)
+            );
+            gap: 20px;
+        }
+
+        .game-card {
+            overflow: hidden;
+            background: #171717;
+            border: 1px solid #292929;
+            border-radius: 14px;
+        }
+
+        .game-icon {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+            display: block;
+            background: #222;
+        }
+
+        .game-info {
+            padding: 15px;
+        }
+
+        .game-name {
+            font-size: 19px;
+            font-weight: bold;
+            margin-bottom: 7px;
+            word-break: break-word;
+        }
+
+        .game-description {
+            color: #999;
+            font-size: 13px;
+            line-height: 1.5;
+            word-break: break-word;
+        }
+
+        @media (max-width: 500px) {
+            .container {
+                padding: 24px 16px 50px;
+            }
+
+            .games {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (min-width: 501px) and (max-width: 800px) {
+            .games {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="header">
+
+        <div class="store-name">
+            Ameer Game Store
+        </div>
+
+        <div class="copyright">
+            © 2026 Ameer Game Store
+        </div>
+
+    </header>
+
+
+    <main class="container">
+
+        <section
+            class="games"
+            id="games">
+        </section>
+
+    </main>
+
+
+    <script>
+
+        /*
+            GITHUB SETTINGS
+        */
+
+        const owner = "YOUR_USERNAME";
+        const repository = "YOUR_REPOSITORY";
+        const branch = "main";
+
+
+        const games =
+            document.getElementById("games");
+
+
+        async function loadGames() {
+
+            const response = await fetch(
+                `https://api.github.com/repos/${owner}/${repository}/contents/?ref=${branch}`
+            );
+
+            if (!response.ok) {
+                return;
+            }
+
+            const contents =
+                await response.json();
+
+
+            /*
+                Any folder name is allowed.
+                Only folders are checked.
+            */
+
+            const folders =
+                contents.filter(
+                    item => item.type === "dir"
+                );
+
+
+            for (const folder of folders) {
+
+                const folderPath =
+                    folder.path;
+
+
+                /*
+                    EXACT filenames
+                */
+
+                const nameURL =
+                    `https://raw.githubusercontent.com/` +
+                    `${owner}/${repository}/${branch}/` +
+                    `${folderPath}/Name.txt`;
+
+
+                const descriptionURL =
+                    `https://raw.githubusercontent.com/` +
+                    `${owner}/${repository}/${branch}/` +
+                    `${folderPath}/Description.txt`;
+
+
+                /*
+                    Name.txt and Description.txt
+                    are required.
+                */
+
+                try {
+
+                    const nameResponse =
+                        await fetch(nameURL);
+
+
+                    const descriptionResponse =
+                        await fetch(descriptionURL);
+
+
+                    if (
+                        !nameResponse.ok ||
+                        !descriptionResponse.ok
+                    ) {
+                        continue;
+                    }
+
+
+                    const name =
+                        (await nameResponse.text()).trim();
+
+
+                    const description =
+                        (await descriptionResponse.text()).trim();
+
+
+                    if (!name) {
+                        continue;
+                    }
+
+
+                    /*
+                        Icon.png is optional.
+                    */
+
+                    const iconURL =
+                        `https://raw.githubusercontent.com/` +
+                        `${owner}/${repository}/${branch}/` +
+                        `${folderPath}/Icon.png`;
+
+
+                    const card =
+                        document.createElement("div");
+
+                    card.className =
+                        "game-card";
+
+
+                    const image =
+                        document.createElement("img");
+
+                    image.className =
+                        "game-icon";
+
+                    image.src =
+                        iconURL;
+
+                    image.alt =
+                        name;
+
+
+                    /*
+                        If Icon.png doesn't exist,
+                        simply hide the image.
+                    */
+
+                    image.onerror = function () {
+                        this.style.display = "none";
+                    };
+
+
+                    const info =
+                        document.createElement("div");
+
+                    info.className =
+                        "game-info";
+
+
+                    const title =
+                        document.createElement("div");
+
+                    title.className =
+                        "game-name";
+
+                    title.textContent =
+                        name;
+
+
+                    const desc =
+                        document.createElement("div");
+
+                    desc.className =
+                        "game-description";
+
+                    desc.textContent =
+                        description;
+
+
+                    info.appendChild(title);
+                    info.appendChild(desc);
+
+                    card.appendChild(image);
+                    card.appendChild(info);
+
+                    games.appendChild(card);
+
+                } catch (error) {
+
+                    /*
+                        Ignore folders that don't
+                        contain the required files.
+                    */
+
+                    continue;
+                }
+            }
+        }
+
+
+        loadGames();
+
+    </script>
+
+</body>
+</html>
